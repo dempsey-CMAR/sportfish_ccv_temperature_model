@@ -1,0 +1,113 @@
+---
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    embed-resources: true
+echo: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| include: false
+
+library(air2wateR)
+library(ggplot2)
+library(here)
+library(plotly)
+
+
+theme_set(theme_light())
+
+dt_options <- list(
+  dom = 'ft',
+  paging = FALSE,
+  searching = TRUE,
+  scrollY = "500px",
+  scrollX = "500px",
+  columnDefs = list(list(className = 'dt-center', targets = "_all"))
+)
+
+sim_folder <- here("simulation")
+
+# generate params (writes to /sportfish_ccv_temperature_model/simulation/Pockwock/parameters.txt)
+gen_param(sim_folder, mean_depth = 14)
+
+# Run the model
+run_air2water(sim_folder = sim_folder, mode = "pso")
+
+# model output
+out <- get_outputs(sim_folder = sim_folder)
+out_cmar <- out %>% 
+  select(
+    timestamp_ast = datetime,
+    air_temperature_degree_c = AT,
+    observed_water_temperature_degree_c = LSWT_obs,
+    simulated_water_temperature_degree_c = LSWT_sim,
+    C,
+    status
+  )
+
+pal <- c("#800074", "#298c8c", "#f55f74")
+
+```
+
+# Air Temperature to Water Temperature Model for Pockwock Lake
+
+`r Sys.Date()`
+
+- Air temperature data from the Bedford Range station from the [Government of Canada](https://collaboration.cmc.ec.gc.ca/cmc/climate/Get_More_Data_Plus_de_donnees).
+- Water temperature data from the [Surface Water Quality Monitoring Network Continuous Water Quality Data database](https://data.novascotia.ca/Nature-and-Environment/Surface-Water-Quality-Monitoring-Network-Continuou/bkfi-mjgw/about_data)
+
+## Station Locations
+
+## Observed Air and Water Temperature (inputs)
+
+-- colour by calibration and validation
+
+```{r}
+geom_line(aes(datetime, LSWT_sim, colour = 'Simulated'), linewidth = 0.75) +
+  geom_point(aes(datetime, LSWT_obs, colour = 'Observed')) +
+  scale_color_manual("Water\nTemperature",
+                     values = c("#298c8c", "#f55f74")) +
+  ylab('Temperature (\u00B0C)') +
+  facet_wrap(~status, nrow = 2, scales = "free_x") +
+  theme(axis.title.x = element_blank())
+
+```
+
+
+
+
+## Model Parameters
+
+- reasonable parameter ranges are generated in a pre-processing step.
+- depend mainly on average depth
+- may also depend on values in input.txt (e.g., the objective function and numerical model)
+
+
+Red dot indicates smallest RMSE.
+
+```{r}
+
+plot_param(sim_folder = sim_folder) +
+  ylab('RMSE (\u00B0C)') 
+```
+
+## Simulated vs. Observed Water Temperature
+
+```{r}
+#| warning: false
+
+p <- ggplot(out) +
+  geom_line(aes(datetime, LSWT_sim, colour = 'Simulated'), linewidth = 0.75) +
+  geom_point(aes(datetime, LSWT_obs, colour = 'Observed')) +
+  scale_color_manual("Water\nTemperature",
+                     values = c("#298c8c", "#f55f74")) +
+  ylab('Temperature (\u00B0C)') +
+  facet_wrap(~status, nrow = 2, scales = "free_x") +
+  theme(axis.title.x = element_blank())
+ 
+ggplotly(p)
+```
