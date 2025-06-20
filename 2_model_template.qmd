@@ -31,7 +31,6 @@ dt_options <- list(
   dom = 'ft',
   paging = FALSE,
   searching = TRUE,
-  #scrollY = "500px",
   scrollX = "500px",
   columnDefs = list(list(className = 'dt-center', targets = "_all"))
 )
@@ -58,8 +57,7 @@ file.copy(input_files, sim_path)
 # read in data and assign calibration and validation
 dat <- fread(here("data/8200574_NS01DL0009_data.csv")) %>% 
   mutate(
-    file_type = if_else(
-    year_ast >= start_val, "validation", "calibration")
+    file_type = if_else(year_ast >= start_val, "validation", "calibration")
   )
 
 # cc file
@@ -67,8 +65,7 @@ dat %>%
   filter(file_type == "calibration") %>% 
   select(-c(file_type, date_ast)) %>% 
   fwrite(
-    paste0(sim_path, "/", lake, "/8200574_NS01DL0009_cc.txt"), 
-    col.names = FALSE
+    paste0(sim_path, "/", lake, "/8200574_NS01DL0009_cc.txt"), col.names = FALSE
   )
 
 # cv file
@@ -76,10 +73,8 @@ dat %>%
   filter(file_type == "validation") %>% 
   select(-c(file_type, date_ast)) %>% 
   fwrite(
-    paste0(sim_path, "/", lake, "/8200574_NS01DL0009_cv.txt"), 
-    col.names = FALSE
+    paste0(sim_path, "/", lake, "/8200574_NS01DL0009_cv.txt"), col.names = FALSE
   )
-#sim_folder <- here("simulations")
 
 # generate params (writes to /sportfish_ccv_temperature_model/sim_folder/current_folder/lake/parameters.txt)
 gen_param(sim_path, mean_depth = depth_m)
