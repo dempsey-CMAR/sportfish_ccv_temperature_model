@@ -204,6 +204,17 @@ dat_out %>%
   geom_point() +
   facet_wrap(~variable, ncol = 1, scales = "free")
 
+
+
+# export as csv file ------------------------------------------------------
+
+dat_out %>% 
+  select(-file_type) %>% 
+  fwrite(
+    here("data/8200574_NS01DL0009_data.csv")
+  )
+
+
 # Export calibration and validation as txt files ------------------------------------------------------
 
 # Bedford Range station id: 8200574
