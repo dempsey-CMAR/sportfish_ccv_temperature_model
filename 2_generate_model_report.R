@@ -5,14 +5,14 @@ library(quarto)
 
 # user defined parameters -------------------------------------------------
 
-mean_depth_m <- 14
-start_val <- 2020
+mean_depth_m <- 10
+start_val <- 2022
 
 # export html file --------------------------------------------------------
 
 quarto::quarto_render(
   here("2_model_template.qmd"),
-  execute_params = list(depth_m = mean_depth_m),
+  execute_params = list(depth_m = mean_depth_m, start_val = start_val),
   output_file = paste0(
     paste(
       "pockwock_temperature_model",
