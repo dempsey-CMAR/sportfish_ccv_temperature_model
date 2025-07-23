@@ -6,7 +6,7 @@ library(quarto)
 
 # user defined parameters -------------------------------------------------
 
-mean_depth_m <- 25
+mean_depth_m <- 30
 start_val <- 2020
 
 # export html file --------------------------------------------------------
