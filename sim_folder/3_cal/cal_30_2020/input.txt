@@ -1,0 +1,16 @@
+# Input file
+Pockwock 	# name of the lake, river, ...
+8200574 	# name/ID of the air station
+NS01DL0009 		# name/ID of the water station
+c 			# type of series: c=continuous, m=mean year
+1d 			# time resolution: 1d=daily, nw=n weeks (n=1,2,...), 1m=monthly
+2 			# version: 1=a2w 4 par; 2=a2w 6 par, 3=a2w 8 par
+0 			# Threshold temperature for ice formation
+RMS 		# objective function: KGE, NSE, RMS
+CRN 		# numerical model: CRN, RK2, RK4 or EUL
+PSO
+0.01 		# minimum percentage of data: 0...1
+2000  		# nrun
+-2 			# mineff_index
+1 			# log_flag
+0.9			# Courant number
