@@ -15,7 +15,16 @@
 # solved with daily time step. The model automatically evaluates weekly,
 # multi-weekly, or monthly averages (of water temperature) when using different
 # time scales for model calibration.
+
+# Data Sources
+## Bedford Range air temperature:  Government of Canada
+## https://collaboration.cmc.ec.gc.ca/cmc/climate/Get_More_Data_Plus_de_donnees/
+
+## Pockwock lake water temperature: Surface Water Quality Monitoring Network 
+## Continuous Water Quality Data] (https://open.canada.ca/data/en/dataset/6ac5555e-7df4-6201-8462-3a2d5c4f1721)
  
+## RCP 8.5 air temperature
+
 
 library(data.table)
 library(dplyr)
@@ -27,14 +36,6 @@ library(readr)
 library(tidyr)
 
 theme_set(theme_light())
-
-# solar radiation ---------------------------------------------------------
-
-monthly_solar_rad <- data.frame(
-  month_ast = c(1:12),
-  solar_radiation = c(1.41, 2.26, 3.26, 4.02, 5.00, 5.59, 
-                      5.56, 4.98, 3.76, 2.42, 1.41, 1.09)
-)
 
 # Bedford Range Meteorology Data ------------------------------------------
 
@@ -115,9 +116,7 @@ dat <- air %>%
     date_ast = as_date(paste(year_ast, month_ast, day_ast, sep = "-")),
   ) %>%
   select(date_ast, year_ast, month_ast, day_ast, everything()) %>% 
-  right_join(air_ts, by = join_by(date_ast)) %>% 
-  left_join(monthly_solar_rad, by = "month_ast") %>% 
-  rename(daily_mean_solar_radiation = solar_radiation)
+  right_join(air_ts, by = join_by(date_ast)) 
 
 dat %>% 
   pivot_longer(
@@ -204,51 +203,71 @@ dat_out %>%
   geom_point() +
   facet_wrap(~variable, ncol = 1, scales = "free")
 
-
-
 # export as csv file ------------------------------------------------------
 
-dat_out %>% 
-  select(-file_type) %>% 
-  fwrite(
-    here("data/8200574_NS01DL0009_data.csv")
+# dat_out %>% 
+#   select(-file_type) %>% 
+#   fwrite(here("data/8200574_NS01DL0009_data.csv"))
+
+
+# Downscale projected air temperature ---------------------------------------
+rm(air, air_na, air_raw, air_ts, dat, imp_2018, water, water_raw)
+
+rcp_raw <- fread(
+  here("data-raw/RCP85_airtemperature_data.csv"), data.table = FALSE
+)
+
+rcp <- rcp_raw %>% 
+  mutate(date_ast = as_date(paste(year, month, day, sep = "-"))) %>% 
+  select(
+    date_ast, year_ast = year, month_ast = month, day_ast = day,
+    rcp_air_temperature = air_temperature
+  ) 
+
+ggplot(rcp, aes(date_ast, rcp_air_temperature)) +
+  geom_point()
+
+# note: 2025 dataset not complete for observed air temperature
+unique(dat_out$year_ast)[which(unique(dat_out$year_ast) %in% unique(rcp$year))]
+
+overlap <- c(2015:2024)
+
+# T_a^h
+observed_air_climatology <- dat_out %>% 
+  filter(year_ast %in% overlap) %>% 
+  group_by(month_ast, day_ast) %>% 
+  summarise(observed_climatology = mean(daily_mean_air_temperature_degree_c)) %>% 
+  ungroup() 
+
+# T_a,mod^h
+modelled_air_climatology <- rcp %>% 
+  filter(year_ast %in% overlap) %>% 
+  group_by(month_ast, day_ast) %>% 
+  summarise(modelled_climatology = mean(rcp_air_temperature)) %>% 
+  ungroup() 
+
+# projection
+air_temp_proj <- rcp %>% 
+  left_join(observed_air_climatology, by = join_by(month_ast, day_ast)) %>% 
+  left_join(modelled_air_climatology, by = join_by(month_ast, day_ast)) %>% 
+  mutate(
+    rcp_air_temperature_downscale = observed_climatology + 
+      (rcp_air_temperature - modelled_climatology)
   )
 
+air_temp_proj %>% 
+  pivot_longer(cols = contains("rcp"), names_to = "variable") %>% 
+  ggplot(aes(date_ast, value, col = variable)) +
+  geom_point()
 
-# Export calibration and validation as txt files ------------------------------------------------------
+# Export Downscaled Data --------------------------------------------------
 
-# Bedford Range station id: 8200574
-# Pockwock station id: NS01DL0009
-
-# cc file
-dat_out %>% 
-  filter(file_type == "calibration") %>% 
-  select(-c(file_type, date_ast)) %>% 
-  fwrite(
-    here("simulation/pockwock/8200574_NS01DL0009_cc.txt"), 
-    col.names = FALSE
-  )
-
-# cv file
-dat_out %>% 
-  filter(file_type == "validation") %>% 
-  select(-c(file_type, date_ast)) %>% 
-  fwrite(
-    here("simulation/pockwock/8200574_NS01DL0009_cv.txt"), 
-    col.names = FALSE
-  )
-
-
-# input file --------------------------------------------------------------
-
-# start_date <- as.character(min(dat_out$date_ast, na.rm = TRUE))
-# end_date <- as.character(max(dat_out$date_ast, na.rm = TRUE))
-# 
-# sim_folder <- here("simulation_folder")
-# 
-# input_txt_path <- file.path(sim_folder, "input.txt")
-# input_lines <- c("input_data/input_data.csv", start_date, end_date, "10")
-# writeLines(input_lines, con = input_txt_path, sep = "\n")
-
-
+air_temp_proj %>% 
+  mutate(water_temperature_degree_c = -999) %>% 
+  select(
+    date_ast, year_ast, month_ast, day_ast, 
+    rcp_air_temperature_downscale,
+    water_temperature_degree_c
+  ) %>% 
+  fwrite(here("data/rcp85_air_temperature_downscaled.csv"))
 
