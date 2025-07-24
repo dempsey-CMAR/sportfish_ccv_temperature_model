@@ -22,7 +22,7 @@ theme_set(theme_light())
 
 ##################### UPDATE THESE ###################################
 lake <- "pockwock"
-depth_m <- 30
+depth_m <- 24
 start_val <- 2020 # this is for file naming purposes only
 
 ##################### FILE PATHS ###################################

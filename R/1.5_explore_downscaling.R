@@ -16,8 +16,12 @@ theme_set(theme_light())
 
 air_obs <- fread(here("data/8200574_NS01DL0009_data.csv"), data.table = FALSE)
 
+# rcp_raw <- fread(
+#   here("data-raw/RCP85_airtemperature_data.csv"), data.table = FALSE
+# )
+
 rcp_raw <- fread(
-  here("data-raw/RCP85_airtemperature_data.csv"), data.table = FALSE
+  here("data-raw/pockwock_air_temperature_RCP85.csv"), data.table = FALSE
 )
 
 rcp <- rcp_raw %>% 
@@ -31,7 +35,7 @@ ggplot(rcp, aes(date_ast, rcp_air_temperature)) +
   geom_point()
 
 # note: 2025 dataset not complete for observed air temperature
-unique(dat_out$year_ast)[which(unique(dat_out$year_ast) %in% unique(rcp$year))]
+unique(air_obs$year_ast)[which(unique(air_obs$year_ast) %in% unique(rcp$year))]
 
 overlap <- c(2015:2024)
 

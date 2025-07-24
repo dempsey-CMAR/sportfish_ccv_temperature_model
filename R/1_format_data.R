@@ -213,8 +213,12 @@ dat_out %>%
 # Downscale projected air temperature ---------------------------------------
 rm(air, air_na, air_raw, air_ts, dat, imp_2018, water, water_raw)
 
+# rcp_raw <- fread(
+#   here("data-raw/RCP85_airtemperature_data.csv"), data.table = FALSE
+# )
+# use rcp data from cell closer to pockwock
 rcp_raw <- fread(
-  here("data-raw/RCP85_airtemperature_data.csv"), data.table = FALSE
+  here("data-raw/pockwock_air_temperature_RCP85.csv"), data.table = FALSE
 )
 
 rcp <- rcp_raw %>% 

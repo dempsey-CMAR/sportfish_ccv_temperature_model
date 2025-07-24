@@ -4,9 +4,14 @@
 .Ruserdata
 
 *html
+
 simulation_practice
 sim_folder/sim_*
 sim_folder/archive
+
+sim_folder/2_cal_val/calval_24_2020/pockwock
+sim_folder/3_cal/cal_24_2020/pockwock
+sim_folder/4_proj/proj_24_2020/pockwock
 
 script_sim_folder/sim_*
 

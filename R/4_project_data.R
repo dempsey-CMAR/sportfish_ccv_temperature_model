@@ -22,7 +22,7 @@ theme_set(theme_light())
 
 ##################### UPDATE THESE ###################################
 lake <- "pockwock"
-depth_m <- 30
+depth_m <- 24
 start_val <- 2020 # this is for file naming purposes only
 
 ##################### FILE PATHS ###################################
@@ -46,25 +46,6 @@ file.copy(inputs, proj_path)
 file.copy(outputs, paste0(lake_path, "/output_2/"))
 file.copy(outputs, output_path)
 
-
-# # Copy files from cal folder ----------------------------------------------
-# 
-# # create required folders
-# dir.create(paste0(sim_path, "/pockwock"))
-# dir.create(paste0(sim_path, "/pockwock/output_2"))
-# 
-# # copy files 
-# inputs <- list.files(cal_path, pattern = "txt", full.names = TRUE)
-# outputs <- list.files(paste0(cal_path, "/pockwock/output_2"), full.names = TRUE)
-# 
-# file.copy(inputs, sim_path)
-# file.copy(outputs, paste0(sim_path, "/pockwock/output_2"))
-# 
-# file.copy(
-#   paste0(cal_path, "/pockwock/output_2/1_PSO_RMS_8200574_NS01DL0009_c_1d.out"),
-#   paste0(sim_path, "/parameters_forward.txt")
-# )
-
 # PROJECTED AIR TEMP ------------------------------------------------------
 
 # read in data 
@@ -87,7 +68,8 @@ mod <- aw_extract_cal_output(
 )
 
 mod_long <- mod %>% 
-  pivot_longer(cols = contains("temperature"), names_to = "variable") 
+  pivot_longer(cols = contains("temperature"), names_to = "variable")# %>% 
+#  filter(!is.na(observed_water_temperature))
 
 ################# FIGURES #######################
 fig_prefix <- paste0("proj_", depth_m, "_", start_val)

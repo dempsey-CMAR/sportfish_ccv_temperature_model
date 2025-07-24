@@ -22,7 +22,7 @@ aw_plot_model_ts <- function(dat, pal = c("lightgrey", "#063E4D", "#7AD151")) {
     ) %>%
     ggplot(aes(timestamp_ast, value, col = variable)) +
     geom_line(linewidth = 1) +
-    scale_color_manual("Temperature", values = pal) +
+    scale_color_manual("Temperature", values = pal, drop = TRUE) +
     ylab('Temperature (\u00B0C)') +
     facet_wrap(~status, nrow = 2, scales = "free_x") +
     theme(axis.title.x = element_blank())
